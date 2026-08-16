@@ -1,0 +1,276 @@
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+
+local localPlayer = Players.LocalPlayer
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("MainMultitoolGui") then 
+    playerGui.MainMultitoolGui:Destroy() 
+end
+
+local WYSTAWCA_RANG = "Demon0x0x1"
+local EARLY_ACCESS_LIST = { "NickWspolpraca1" } 
+local ADMIN_LIST = { "NickAdmin1" } 
+local BLACKLIST = { "Zbanowany1" } 
+
+_G.DynamicRanks = _G.DynamicRanks or {}
+
+local function getSystemRole(player)
+    if player.Name == WYSTAWCA_RANG then return "Właściciel" end
+    for _, name in ipairs(EARLY_ACCESS_LIST) do if player.Name == name then return "Współpraca" end end
+    for _, name in ipairs(ADMIN_LIST) do if player.Name == name then return "Admin" end end
+    if _G.DynamicRanks[player.Name] then return _G.DynamicRanks[player.Name] end
+    return "Użytkownik"
+end
+
+for _, name in ipairs(BLACKLIST) do 
+    if localPlayer.Name == name then return end 
+end
+
+local myRole = getSystemRole(localPlayer)
+local isMaximized = false
+
+local function showNotification(titleText, text)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = titleText,
+            Text = text,
+            Duration = 5
+        })
+    end)
+end
+
+if myRole ~= "Użytkownik" then
+    task.spawn(function()
+        task.wait(4.5)
+        showNotification("MULTIPANEL", "Zalogowano jako: " .. string.upper(myRole))
+    end)
+end
+
+local introGui = Instance.new("ScreenGui")
+introGui.Name = "IntroGui"
+introGui.ResetOnSpawn = false
+introGui.Parent = playerGui
+
+local introFrame = Instance.new("Frame")
+introFrame.Size = UDim2.new(1, 0, 1, 0)
+introFrame.BackgroundColor3 = Color3.fromRGB(10, 15, 10)
+introFrame.Parent = introGui
+
+local introText = Instance.new("TextLabel")
+introText.Size = UDim2.new(1, 0, 1, 0)
+introText.BackgroundTransparency = 1
+introText.TextColor3 = Color3.fromRGB(0, 255, 120)
+introText.Font = Enum.Font.GothamBold
+introText.TextSize = 55
+introText.Text = ""
+introText.Parent = introFrame
+
+task.wait(0.3)
+introText.Text = "..GG.."
+task.wait(1.2)
+introText.Text = "CITERSON"
+task.wait(1.2)
+introText.Text = "|. •.|"
+task.wait(1.2)
+
+local fadeTween = TweenService:Create(introFrame, TweenInfo.new(0.8), {BackgroundTransparency = 1})
+local textTween = TweenService:Create(introText, TweenInfo.new(0.8), {TextTransparency = 1})
+fadeTween:Play()
+textTween:Play()
+fadeTween.Completed:Connect(function() introGui:Destroy() end)
+
+local mainGui = Instance.new("ScreenGui")
+mainGui.Name = "MainMultitoolGui"
+mainGui.ResetOnSpawn = false
+mainGui.Parent = playerGui
+
+local hasAdminMenu = (myRole == "Właściciel" or myRole == "Współpraca" or myRole == "Admin")
+local defaultSize = hasAdminMenu and UDim2.new(0, 360, 0, 390) or UDim2.new(0, 360, 0, 335)
+local defaultPosition = UDim2.new(0.5, -180, 0.5, -180)
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = defaultSize
+mainFrame.Position = defaultPosition
+mainFrame.BackgroundColor3 = Color3.fromRGB(12, 22, 14)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = mainGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(0, 255, 120)
+UIStroke.Transparency = 0.2
+UIStroke.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -120, 0, 60)
+title.Position = UDim2.new(0, 20, 0, 5)
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(200, 255, 210)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextYAlignment = Enum.TextYAlignment.Top
+title.TextWrapped = true
+title.Text = "GG\nCIT\n  1"
+title.Parent = mainFrame
+
+local controlContainer = Instance.new("Frame")
+controlContainer.Size = UDim2.new(0, 100, 0, 45)
+controlContainer.Position = UDim2.new(1, -110, 0, 5)
+controlContainer.BackgroundTransparency = 1
+controlContainer.Parent = mainFrame
+
+local function createControlBtn(text, xPos, color, parent)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 25, 0, 25)
+    btn.Position = UDim2.new(0, xPos, 0, 10)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 35, 22)
+    btn.TextColor3 = color
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.Text = text
+    btn.Parent = parent
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", btn).Color = color
+    return btn
+end
+
+local btnMinimize = createControlBtn("-", 0, Color3.fromRGB(255, 200, 50), controlContainer)
+local btnMaximize = createControlBtn("⬜", 35, Color3.fromRGB(50, 200, 255), controlContainer)
+local btnClose = createControlBtn("X", 70, Color3.fromRGB(255, 70, 70), controlContainer)
+
+local miniFrame = Instance.new("TextButton")
+miniFrame.Size = UDim2.new(0, 150, 0, 40)
+miniFrame.BackgroundColor3 = Color3.fromRGB(12, 22, 14)
+miniFrame.TextColor3 = Color3.fromRGB(0, 255, 120)
+miniFrame.Font = Enum.Font.GothamBold
+miniFrame.TextSize = 14
+miniFrame.Text = "GGcit"
+miniFrame.Visible = false
+miniFrame.Active = true
+miniFrame.Draggable = true
+miniFrame.Parent = mainGui
+Instance.new("UICorner", miniFrame).CornerRadius = UDim.new(0, 10)
+local miniStroke = Instance.new("UIStroke", miniFrame)
+miniStroke.Thickness = 2
+miniStroke.Color = Color3.fromRGB(0, 255, 120)
+
+btnClose.MouseButton1Click:Connect(function() mainGui:Destroy() end)
+btnMaximize.MouseButton1Click:Connect(function()
+    if not isMaximized then 
+        mainFrame.Size = UDim2.new(0, 600, 0, 500)
+        mainFrame.Position = UDim2.new(0.5, -300, 0.5, -250)
+        isMaximized = true 
+    else 
+        mainFrame.Size = defaultSize
+        mainFrame.Position = defaultPosition
+        isMaximized = false 
+    end 
+end)
+btnMinimize.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    miniFrame.Position = UDim2.new(0, mainFrame.AbsolutePosition.X, 0, mainFrame.AbsolutePosition.Y)
+    miniFrame.Visible = true
+end)
+miniFrame.MouseButton1Click:Connect(function()
+    miniFrame.Visible = false
+    mainFrame.Position = UDim2.new(0, miniFrame.AbsolutePosition.X, 0, miniFrame.AbsolutePosition.Y)
+    mainFrame.Visible = true
+end)
+
+local function styleButton(btn, text, yPos, colorGlow, parentFrame)
+    btn.Size = UDim2.new(1, -40, 0, 42)
+    btn.Position = UDim2.new(0, 20, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 40, 24)
+    btn.TextColor3 = colorGlow
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextSize = 13
+    btn.Text = text
+    btn.Parent = parentFrame or mainFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = colorGlow
+    stroke.Thickness = 1
+
+    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 65, 35)}):Play() end)
+    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 40, 24)}):Play() end)
+end
+
+local btn1 = Instance.new("TextButton")
+styleButton(btn1, "URUCHOM VAPE VOIDWARE", 75, Color3.fromRGB(0, 200, 90))
+
+local btn2 = Instance.new("TextButton")
+styleButton(btn2, "URUCHOM MARSKYBASE", 130, Color3.fromRGB(0, 200, 90))
+
+local btnFox = Instance.new("TextButton")
+styleButton(btnFox, "URUCHOM FOXNAMEHUB", 185, Color3.fromRGB(0, 200, 90))
+
+local btn3 = Instance.new("TextButton")
+styleButton(btn3, "OTWÓRZ CZAT LOBBY", 240, Color3.fromRGB(0, 255, 120))
+
+local btnAdmin = nil
+if hasAdminMenu then
+    btnAdmin = Instance.new("TextButton")
+    local panelTitle = (localPlayer.Name == WYSTAWCA_RANG) and "👑 ZARZĄDZANIE WŁAŚCICIELA 👑" or (myRole == "Współpraca") and "⚡ PANEL EARLY ACCESS ⚡" or "⚔️ PANEL ADMINISTRACJI ⚔️"
+    styleButton(btnAdmin, panelTitle, 295, Color3.fromRGB(255, 215, 0))
+    btnAdmin.BackgroundColor3 = Color3.fromRGB(40, 35, 15)
+end
+
+local chatFrame = Instance.new("Frame")
+chatFrame.Size = UDim2.new(0, 280, 0, 340)
+chatFrame.Position = UDim2.new(0.5, 195, 0.5, -170)
+chatFrame.BackgroundColor3 = Color3.fromRGB(12, 22, 14)
+chatFrame.Visible = false
+chatFrame.Active = true
+chatFrame.Draggable = true
+chatFrame.Parent = mainGui
+Instance.new("UICorner", chatFrame).CornerRadius = UDim.new(0, 12)
+local chatStroke = Instance.new("UIStroke", chatFrame)
+chatStroke.Color = Color3.fromRGB(0, 255, 120)
+chatStroke.Thickness = 2
+
+local chatTitle = Instance.new("TextLabel")
+chatTitle.Size = UDim2.new(1, -50, 0, 60)
+chatTitle.Position = UDim2.new(0, 15, 0, 5)
+chatTitle.BackgroundTransparency = 1
+chatTitle.TextColor3 = Color3.fromRGB(200, 255, 210)
+chatTitle.Font = Enum.Font.GothamBold
+chatTitle.TextSize = 13
+chatTitle.TextXAlignment = Enum.TextXAlignment.Left
+chatTitle.TextYAlignment = Enum.TextYAlignment.Top
+chatTitle.TextWrapped = true
+chatTitle.Text = "GG\nCIT\n  1"
+chatTitle.Parent = chatFrame
+
+local btnCloseChat = createControlBtn("X", 245, Color3.fromRGB(255, 70, 70), chatFrame)
+btnCloseChat.Position = UDim2.new(0, 245, 0, 10)
+btnCloseChat.MouseButton1Click:Connect(function() chatFrame.Visible = false end)
+
+local chatLog = Instance.new("ScrollingFrame", chatFrame)
+chatLog.Size = UDim2.new(1, -20, 0, 220)
+chatLog.Position = UDim2.new(0, 10, 0, 65)
+chatLog.BackgroundColor3 = Color3.fromRGB(8, 14, 9)
+chatLog.ScrollBarThickness = 3
+chatLog.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 120)
+chatLog.CanvasSize = UDim2.new(0, 0, 0, 0)
+chatLog.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Instance.new("UICorner", chatLog).CornerRadius = UDim.new(0, 8)
+local cLayout = Instance.new("UIListLayout", chatLog)
+cLayout.Padding = UDim.new(0, 6)
+
+local chatInput = Instance.new("TextBox", chatFrame)
+chatInput.Size = UDim2.new(1, -20, 0, 36)
+chatInput.Position = UDim2.new(0, 10, 0, 294)chatInput.BackgroundColor3 = Color3.fromRGB(20, 40, 24)chatInput.TextColor3 = Color3.fromRGB(255, 255, 255)chatInput.Font = Enum.Font.GothamchatInput.TextSize = 12chatInput.PlaceholderText = "Napisz coś i kliknij Enter..."chatInput.Text = ""Instance.new("UICorner", chatInput).CornerRadius = UDim.new(0, 8)local adminFrame = Instance.new("Frame")adminFrame.Size = (localPlayer.Name == WYSTAWCA_RANG) and UDim2.new(0, 280, 0, 330) or UDim2.new(0, 260, 0, 220)adminFrame.Position = UDim2.new(0.5, -130, 0.5, 180)adminFrame.BackgroundColor3 = Color3.fromRGB(25, 22, 10)adminFrame.Visible = falseadminFrame.Active = trueadminFrame.Draggable = trueadminFrame.Parent = mainGuiInstance.new("UICorner", adminFrame).CornerRadius = UDim.new(0, 12)local adminStroke = Instance.new("UIStroke", adminFrame)adminStroke.Color = Color3.fromRGB(255, 215, 0)adminStroke.Thickness = 2local adminTitle = Instance.new("TextLabel")adminTitle.Size = UDim2.new(1, -40, 0, 60)adminTitle.Position = UDim2.new(0, 15, 0, 5)adminTitle.BackgroundTransparency = 1adminTitle.TextColor3 = Color3.fromRGB(255, 235, 150)adminTitle.Font = Enum.Font.GothamBoldadminTitle.TextSize = 12adminTitle.TextXAlignment = Enum.TextXAlignment.LeftadminTitle.TextYAlignment = Enum.TextYAlignment.TopadminTitle.TextWrapped = trueadminTitle.Text = "GG\nCIT\n  1"adminTitle.Parent = adminFramelocal bCA = createControlBtn("X", adminFrame.Size.X.Offset - 35, Color3.fromRGB(255, 70, 70), adminFrame)bCA.MouseButton1Click:Connect(function() adminFrame.Visible = false end)local btnAdmin1 = Instance.new("TextButton")styleButton(btnAdmin1, "⚡ Przyśpieszenie (Speed Hack) ⚡", 70, Color3.fromRGB(255, 215, 0), adminFrame)btnAdmin1.Size = UDim2.new(1, -30, 0, 35)local btnAdmin2 = Instance.new("TextButton")styleButton(btnAdmin2, "🚀 Wysoki Skok (Infinite Jump) 🚀", 115, Color3.fromRGB(255, 215, 0), adminFrame)btnAdmin2.Size = UDim2.new(1, -30, 0, 35)if localPlayer.Name == WYSTAWCA_RANG thenlocal targetInput = Instance.new("TextBox", adminFrame)targetInput.Size = UDim2.new(0, 115, 0, 30)targetInput.Position = UDim2.new(0, 15, 0, 165)targetInput.BackgroundColor3 = Color3.fromRGB(40, 35, 15)targetInput.TextColor3 = Color3.fromRGB(255, 255, 255)targetInput.Font = Enum.Font.GothamtargetInput.PlaceholderText = "Nick Gracza"targetInput.Text = ""Instance.new("UICorner", targetInput).CornerRadius = UDim.new(0, 6)local rankInput = Instance.new("TextBox", adminFrame)rankInput.Size = UDim2.new(0, 115, 0, 30)rankInput.Position = UDim2.new(0, 140, 0, 165)rankInput.BackgroundColor3 = Color3.fromRGB(40, 35, 15)rankInput.TextColor3 = Color3.fromRGB(255, 255, 255)rankInput.Font = Enum.Font.GothamrankInput.PlaceholderText = "Nazwa Rangi"rankInput.Text = ""Instance.new("UICorner", rankInput).CornerRadius = UDim.new(0, 6)local btnGiveRank = Instance.new("TextButton")styleButton(btnGiveRank, "👑 NADAJ RANGĘ W LOBBY 👑", 205, Color3.fromRGB(255, 100, 255), adminFrame)btnGiveRank.Size = UDim2.new(1, -30, 0, 35)btnGiveRank.MouseButton1Click:Connect(function()if targetInput.Text ~= "" and rankInput.Text ~= "" then_G.DynamicRanks[targetInput.Text] = rankInput.TextshowNotification("SUKCES", "Ranga " .. rankInput.Text .. " nadana dla " .. targetInput.Text)targetInput.Text = "" rankInput.Text = ""endend)elselocal adminHint = Instance.new("TextLabel", adminFrame)adminHint.Size = UDim2.new(1, 0, 0, 40)adminHint.Position = UDim2.new(0, 0, 0, 165)adminHint.BackgroundTransparency = 1adminHint.TextColor3 = Color3.fromRGB(180, 170, 130)adminHint.Font = Enum.Font.GothamadminHint.TextSize = 10adminHint.TextWrapped = trueadminHint.Text = "Zarządzanie rangami zablokowane. Dostęp ma tylko Demon0x0x1."endlocal speedActive = falsebtnAdmin1.MouseButton1Click:Connect(function()speedActive = not speedActivelocalPlayer.Character.Humanoid.WalkSpeed = speedActive and 50 or 16btnAdmin1.Text = speedActive and "WalkSpeed: WŁĄCZONE (50)" or "⚡ Przyśpieszenie (Speed Hack) ⚡"end)local infJumpActive = falsebtnAdmin2.MouseButton1Click:Connect(function()infJumpActive = not infJumpActivebtnAdmin2.Text = infJumpActive and "Infinite Jump: WŁĄCZONE" or "🚀 Wysoki Skok (Infinite Jump) 🚀"end)UserInputService.JumpRequest:Connect(function()if infJumpActive and localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid") thenlocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)endend)local function executeExternal(link, button)button.Text = "ŁADOWANIE..."task.spawn(function()local success, err = pcall(function()loadstring(game:HttpGet(link))()end)if success thenbutton.Text = "URUCHOMIONO!"task.wait(2)button.Text = "URUCHOM PONOWNIE"elsebutton.Text = "BŁĄD SERWERA"warn("Blad ladowania skryptu: ", err)endend)endbtn1.MouseButton1Click:Connect(function() executeExternal("vapevoidware.xyz", btn1) end)btn2.MouseButton1Click:Connect(function() executeExternal("pastebin.com", btn2) end)btnFox.MouseButton1Click:Connect(function() executeExternal("githubusercontent.com", btnFox) end)btn3.MouseButton1Click:Connect(function() chatFrame.Visible = not chatFrame.Visible end)if btnAdmin then btnAdmin.MouseButton1Click:Connect(function() adminFrame.Visible = not adminFrame.Visible end) endlocal SECRET_PREFIX = "[SCRIPT_CHAT_BETA]"local RANK_PREFIX = "[RANK_ASSIGN_BETA]"local function addMessageToLog(senderName, message)local msgLabel = Instance.new("TextLabel", chatLog)msgLabel.Size = UDim2.new(1, -10, 0, 0)msgLabel.AutomaticSize = Enum.AutomaticSize.YmsgLabel.BackgroundTransparency = 1msgLabel.Font = Enum.Font.GothammsgLabel.TextSize = 12msgLabel.TextXAlignment = Enum.TextXAlignment.LeftmsgLabel.TextWrapped = truemsgLabel.RichText = truelocal senderObject = Players:FindFirstChild(senderName)local role = senderObject and getSystemRole(senderObject) or "Użytkownik"if senderName == WYSTAWCA_RANG thenmsgLabel.Text = "[WŁAŚCICIEL] " .. senderName .. ": " .. messageelseif role == "Współpraca" thenmsgLabel.Text = "[EARLY_ACCESS] " .. senderName .. ": " .. messageelseif role == "Admin" thenmsgLabel.Text = "[ADMIN] " .. senderName .. ": " .. messageelseif role ~= "Użytkownik" thenmsgLabel.Text = "[" .. string.upper(role) .. "] " .. senderName .. ": " .. messageelseif senderName == localPlayer.Name thenmsgLabel.Text = "" .. senderName .. ": " .. messageelsemsgLabel.Text = "" .. senderName .. ": " .. messageendtask.wait(0.05)chatLog.CanvasPosition = Vector2.new(0, chatLog.AbsoluteContentSize.Y)endchatInput.FocusLost:Connect(function(enterPressed)if enterPressed and chatInput.Text ~= "" thenlocal msgText = chatInput.TextchatInput.Text = ""addMessageToLog(localPlayer.Name, msgText)endend)
