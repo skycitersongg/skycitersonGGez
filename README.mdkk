@@ -1,0 +1,248 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local lp = Players.LocalPlayer
+local pGui = lp:WaitForChild("PlayerGui")
+
+if pGui:FindFirstChild("MainMultitoolGui") then pGui.MainMultitoolGui:Destroy() end
+
+local isOwner = (lp.Name == "Demon0x0x1")
+local isMax = false
+
+-- PRE-LOADING: Delta pobiera i przygotowuje skrypty od razu na starcie jako osobne funkcje
+local function safeLoad(url)
+    local success, scriptFunc = pcall(function()
+        return loadstring(game:HttpGet(url))
+    end)
+    if success and type(scriptFunc) == "function" then
+        return scriptFunc
+    end
+    return nil
+end
+
+local vapeFunc = safeLoad("https://vapevoidware.xyz")
+local marsFunc = safeLoad("https://pastebin.com")
+local foxFunc = safeLoad("https://githubusercontent.com")
+
+local main = Instance.new("ScreenGui", pGui)
+main.Name = "MainMultitoolGui"
+main.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", main)
+frame.Size = isOwner and UDim2.new(0, 340, 0, 350) or UDim2.new(0, 340, 0, 290)
+frame.Position = UDim2.new(0.5, -170, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(15, 25, 15)
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+local stroke = Instance.new("UIStroke", frame)
+stroke.Color = Color3.fromRGB(0, 255, 120)
+stroke.Thickness = 2
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -100, 0, 50)
+title.Position = UDim2.new(0, 15, 0, 5)
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(200, 255, 210)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 13
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextYAlignment = Enum.TextYAlignment.Top
+title.TextWrapped = true
+title.Text = "GG\nCIT\n  1"
+
+local cCon = Instance.new("Frame", frame)
+cCon.Size = UDim2.new(0, 90, 0, 40)
+cCon.Position = UDim2.new(1, -100, 0, 5)
+cCon.BackgroundTransparency = 1
+
+local function makeCtrl(txt, x, col)
+    local b = Instance.new("TextButton", cCon)
+    b.Size = UDim2.new(0, 22, 0, 22)
+    b.Position = UDim2.new(0, x, 0, 10)
+    b.BackgroundColor3 = Color3.fromRGB(25, 40, 28)
+    b.TextColor3 = col
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 11
+    b.Text = txt
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
+    return b
+end
+
+local bMin = makeCtrl("-", 0, Color3.fromRGB(255, 200, 50))
+local bMax = makeCtrl("⬜", 30, Color3.fromRGB(50, 200, 255))
+local bCls = makeCtrl("X", 60, Color3.fromRGB(255, 70, 70))
+
+local mini = Instance.new("TextButton", main)
+mini.Size = UDim2.new(0, 120, 0, 35)
+mini.BackgroundColor3 = Color3.fromRGB(15, 25, 15)
+mini.TextColor3 = Color3.fromRGB(0, 255, 120)
+mini.Font = Enum.Font.GothamBold
+mini.TextSize = 13
+mini.Text = "GGcit"
+mini.Visible = false
+mini.Active = true
+mini.Draggable = true
+Instance.new("UICorner", mini).CornerRadius = UDim.new(0, 8)
+local mStr = Instance.new("UIStroke", mini)
+mStr.Color = Color3.fromRGB(0, 255, 120)
+mStr.Thickness = 2
+
+bCls.MouseButton1Click:Connect(function() main:Destroy() end)
+bMin.MouseButton1Click:Connect(function() frame.Visible = false mini.Position = UDim2.new(0, frame.AbsolutePosition.X, 0, frame.AbsolutePosition.Y) mini.Visible = true end)
+mini.MouseButton1Click:Connect(function() mini.Visible = false frame.Position = UDim2.new(0, mini.AbsolutePosition.X, 0, mini.AbsolutePosition.Y) frame.Visible = true end)
+bMax.MouseButton1Click:Connect(function()
+    if not isMax then frame.Size = UDim2.new(0, 500, 0, 420) isMax = true else frame.Size = isOwner and UDim2.new(0, 340, 0, 350) or UDim2.new(0, 340, 0, 290) isMax = false end
+end)
+
+local function makeBtn(txt, y, preloadedFunc)
+    local b = Instance.new("TextButton", frame)
+    b.Size = UDim2.new(1, -30, 0, 38)
+    b.Position = UDim2.new(0, 15, 0, y)
+    b.BackgroundColor3 = Color3.fromRGB(25, 50, 30)
+    b.TextColor3 = Color3.fromRGB(0, 255, 120)
+    b.Font = Enum.Font.GothamMedium
+    b.TextSize = 12
+    b.Text = txt
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    local s = Instance.new("UIStroke", b) s.Color = Color3.fromRGB(0, 200, 90)
+    
+    b.MouseButton1Click:Connect(function()
+        if preloadedFunc then
+            b.Text = "ODPALANIE..."
+            task.spawn(function()
+                local success, err = pcall(preloadedFunc)
+                b.Text = success and "URUCHOMIONO!" or "BŁĄD WYKONANIA"
+                task.wait(1.5) b.Text = txt
+            end)
+        else
+            b.Text = "BŁĄD POBIERANIA"
+            task.wait(1.5) b.Text = txt
+        end
+    end)
+end
+
+makeBtn("URUCHOM VAPE VOIDWARE", 65, vapeFunc)
+makeBtn("URUCHOM MARSKYBASE", 115, marsFunc)
+makeBtn("URUCHOM FOXNAMEHUB", 165, foxFunc)
+
+local bChat = Instance.new("TextButton", frame)
+bChat.Size = UDim2.new(1, -30, 0, 38)
+bChat.Position = UDim2.new(0, 15, 0, 215)
+bChat.BackgroundColor3 = Color3.fromRGB(25, 50, 30)
+bChat.TextColor3 = Color3.fromRGB(0, 255, 200)
+bChat.Font = Enum.Font.GothamMedium
+bChat.TextSize = 12
+bChat.Text = "OTWÓRZ CZAT LOBBY"
+Instance.new("UICorner", bChat).CornerRadius = UDim.new(0, 6)
+local cStroke = Instance.new("UIStroke", bChat) cStroke.Color = Color3.fromRGB(0, 200, 150)
+
+local chatFrame = Instance.new("Frame", main)
+chatFrame.Size = UDim2.new(0, 260, 0, 300)
+chatFrame.Position = UDim2.new(0.5, 180, 0.5, -150)
+chatFrame.BackgroundColor3 = Color3.fromRGB(12, 22, 14)
+chatFrame.Visible = false
+chatFrame.Active = true
+chatFrame.Draggable = true
+Instance.new("UICorner", chatFrame).CornerRadius = UDim.new(0, 10)
+local chStr = Instance.new("UIStroke", chatFrame) chStr.Color = Color3.fromRGB(0, 255, 120) chStr.Thickness = 2
+
+local chatTitle = Instance.new("TextLabel", chatFrame)
+chatTitle.Size = UDim2.new(1, -40, 0, 50)
+chatTitle.Position = UDim2.new(0, 12, 0, 5)
+chatTitle.BackgroundTransparency = 1
+chatTitle.TextColor3 = Color3.fromRGB(200, 255, 210)
+chatTitle.Font = Enum.Font.GothamBold
+chatTitle.TextSize = 12
+chatTitle.TextXAlignment = Enum.TextXAlignment.Left
+chatTitle.TextYAlignment = Enum.TextYAlignment.Top
+chatTitle.TextWrapped = true
+chatTitle.Text = "GG\nCIT\n  1"
+
+local bCloseChat = Instance.new("TextButton", chatFrame)
+bCloseChat.Size = UDim2.new(0, 20, 0, 22)
+bCloseChat.Position = UDim2.new(1, -32, 0, 15)
+bCloseChat.BackgroundColor3 = Color3.fromRGB(25, 40, 28)
+bCloseChat.TextColor3 = Color3.fromRGB(255, 70, 70)
+bCloseChat.Font = Enum.Font.GothamBold
+bCloseChat.TextSize = 11
+bCloseChat.Text = "X"
+Instance.new("UICorner", bCloseChat).CornerRadius = UDim.new(0, 5)
+bCloseChat.MouseButton1Click:Connect(function() chatFrame.Visible = false end)
+
+local chatLog = Instance.new("ScrollingFrame", chatFrame)
+chatLog.Size = UDim2.new(1, -20, 0, 180)
+chatLog.Position = UDim2.new(0, 10, 0, 60)
+chatLog.BackgroundColor3 = Color3.fromRGB(8, 14, 9)
+chatLog.ScrollBarThickness = 2
+chatLog.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 120)
+chatLog.CanvasSize = UDim2.new(0, 0, 0, 0)
+chatLog.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Instance.new("UICorner", chatLog).CornerRadius = UDim.new(0, 6)
+local cLayout = Instance.new("UIListLayout", chatLog) cLayout.Padding = UDim.new(0, 4)
+
+local chatInput = Instance.new("TextBox", chatFrame)
+chatInput.Size = UDim2.new(1, -20, 0, 32)
+chatInput.Position = UDim2.new(0, 10, 0, 253)
+chatInput.BackgroundColor3 = Color3.fromRGB(20, 40, 24)
+chatInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+chatInput.Font = Enum.Font.Gotham
+chatInput.TextSize = 12
+chatInput.PlaceholderText = "Wpisz tekst i kliknij Enter..."
+chatInput.Text = ""
+Instance.new("UICorner", chatInput).CornerRadius = UDim.new(0, 6)
+
+bChat.MouseButton1Click:Connect(function() chatFrame.Visible = not chatFrame.Visible end)
+
+local function addMsg(sender, msg)
+    local l = Instance.new("TextLabel", chatLog)
+    l.Size = UDim2.new(1, -10, 0, 0)
+    l.AutomaticSize = Enum.AutomaticSize.Y
+    l.BackgroundTransparency = 1
+    l.Font = Enum.Font.Gotham
+    l.TextSize = 11
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.TextWrapped = true
+    l.RichText = true
+    if sender == "Demon0x0x1" then
+        l.Text = "<font color='rgb(255,50,50)'><b>[WŁAŚCICIEL] " .. sender .. ":</b></font> " .. msg
+    elseif sender == lp.Name then
+        l.Text = "<font color='rgb(0,255,120)'><b>" .. sender .. ":</b></font> " .. msg
+    else
+        l.Text = "<font color='rgb(200,200,200)'><b>" .. sender .. ":</b></font> " .. msg
+    end
+    task.wait(0.05) chatLog.CanvasPosition = Vector2.new(0, chatLog.AbsoluteContentSize.Y)
+end
+
+chatInput.FocusLost:Connect(function(ep)
+    if ep and chatInput.Text ~= "" then local t = chatInput.Text chatInput.Text = "" addMsg(lp.Name, t) end
+end)
+
+if isOwner then
+    local bSpd = Instance.new("TextButton", frame)
+    bSpd.Size = UDim2.new(0, 150, 0, 38)
+    bSpd.Position = UDim2.new(0, 15, 0, 275)
+    bSpd.BackgroundColor3 = Color3.fromRGB(50, 45, 15)
+    bSpd.TextColor3 = Color3.fromRGB(255, 215, 0)
+    bSpd.Text = "SPEED HACK"
+    Instance.new("UICorner", bSpd).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", bSpd).Color = Color3.fromRGB(255, 215, 0)
+    
+    local spdA = false
+    bSpd.MouseButton1Click:Connect(function()
+        spdA = not spdA
+        if lp.Character and lp.Character:FindFirstChild("Humanoid") then lp.Character.Humanoid.WalkSpeed = spdA and 50 or 16 end
+        bSpd.Text = spdA and "SPEED: 50" or "SPEED HACK"
+    end)
+
+    local bJmp = Instance.new("TextButton", frame)
+    bJmp.Size = UDim2.new(0, 150, 0, 38)
+    bJmp.Position = UDim2.new(0, 175, 0, 275)
+    bJmp.BackgroundColor3 = Color3.fromRGB(50, 45, 15)
+    bJmp.TextColor3 = Color3.fromRGB(255, 215, 0)
+    bJmp.Text = "INF JUMP"
+    Instance.new("UICorner", bJmp).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", bJmp).Color = Color3.fromRGB(255, 215, 0)
+    
+    local jmpA = false
+    bJmp.MouseButton1Click:Connect(function() jmpA = not jmpA bJmp.Text = jmpA and "JUMP: ON" or "INF JUMP" end)
+    UIS.JumpRequest:Connect(function()if jmpA and lp.Character and lp.Character:FindFirstChildOfClass("Humanoid") then lp.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping) endend)pcall(function() game:GetService("StarterGui"):SetCore("SendNotification", {Title = "WŁAŚCICIEL", Text = "Witaj, Demon0x0x1!"}) end)end
